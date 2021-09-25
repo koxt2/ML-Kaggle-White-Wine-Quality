@@ -72,8 +72,8 @@ save_fig("scatter_matrix_plot")
 
 # To stratify the test set data create an alcohol category atrribute 
 white_data["alcohol_cat"] = pd.cut(white_data["alcohol"],
-                               bins=[8, 9, 10, 11, 12, 13, 14, np.inf],
-                               labels=[8, 9, 10, 11, 12, 13, 14])
+                                bins=[8, 9, 10, 11, 12, 13, 14, np.inf],
+                                labels=[8, 9, 10, 11, 12, 13, 14])
 print(white_data["alcohol_cat"].value_counts()) # Print the count in each category
 
 # Split from the dataset a stratified sample to use as a test set (20%)
@@ -86,19 +86,17 @@ for train_index, test_index in split.split(white_data, white_data["alcohol_cat"]
 print(strat_test_set["alcohol_cat"].value_counts() / len(strat_test_set))
 print(white_data["alcohol_cat"].value_counts() / len(white_data))
 
-# Now the test set and train set are created drop the alcohol category from both
-#for set_ in (strat_train_set, strat_test_set):
-#    set_.drop("alcohol_cat", axis=1, inplace=True)
+# Now the test set and train set are created drop the alcoholcat from both
+for set_ in (strat_train_set, strat_test_set):
+    set_.drop("alcohol_cat", axis=1, inplace=True)
 
 ########## Prepare data for ML algorithms ##########
-#white_data = strat_train_set.drop("quality", axis=1) # Makes a copy of the original data and drops quality (ie, creates predictors)
-#white_data_labels = strat_train_set["quality"].copy() # Makes a copy and copies quality (ie, creates the labels)
+white_data = strat_train_set.drop("quality", axis=1) # Makes a copy of the original data and drops quality (ie, creates predictors)
+white_data_labels = strat_train_set["quality"].copy() # Makes a copy and copies quality (ie, creates the labels)
 
 # Use imputer to fill in NULL values
-#imputer = SimpleImputer(strategy="median")
-#imputer.fit(white_data)
-
-#print("Stats: ", imputer.statistics_)
+imputer = SimpleImputer(strategy="median")
+imputer.fit(white_data)
 
 ########## Select a training model ##########
 ########## Linear Regression ##########
@@ -122,14 +120,14 @@ print(white_data["alcohol_cat"].value_counts() / len(white_data))
 #print("Lin_Reg RMSE: ", lin_rmse)
 
 # Check the linear regression model on all of the data uing Mean Absolute Error
-#print("Lin_Reg MAE: ", lin_mae)
 #lin_mae = mean_absolute_error(white_data_labels, alcohol_predictions)
+#print("Lin_Reg MAE: ", lin_mae)
 
 # Use cross validation to further evaluate the model
-#def display_scores(scores, model):
-#    print(model, " Scores:", scores)
-#    print(model, " Mean:", scores.mean())
-#    print(model, " Standard deviation:", scores.std())
+def display_scores(scores, model):
+    print(model, " Scores:", scores)
+    print(model, " Mean:", scores.mean())
+    print(model, " Standard deviation:", scores.std())
 
 #lin_scores = cross_val_score(lin_reg, white_data, white_data_labels,
 #                             scoring="neg_mean_squared_error", cv=10)
@@ -194,43 +192,43 @@ print(white_data["alcohol_cat"].value_counts() / len(white_data))
 #display_scores(svm_rmse_scores, "SVR")
 
 ########## Fine Tune Random Forest Regressor using GridSearch ##########
-#param_grid = [
+param_grid = [
     # try 12 (3×4) combinations of hyperparameters
-#    {'n_estimators': [120, 180, 240], 'max_features': [2, 4, 6, 8]},
+    {'n_estimators': [160, 180, 200], 'max_features': [1, 2, 4, 6]},
     # then try 6 (2×3) combinations with bootstrap set as False
-#    {'bootstrap': [False], 'n_estimators': [3, 10], 'max_features': [2, 3, 4]},
-#  ]
+    {'bootstrap': [False], 'n_estimators': [3, 10], 'max_features': [2, 3, 4]},
+  ]
 
-#forest_reg = RandomForestRegressor(random_state=42)
+forest_reg = RandomForestRegressor(random_state=42)
 # train across 5 folds, that's a total of (12+6)*5=90 rounds of training 
-#grid_search = GridSearchCV(forest_reg, param_grid, cv=5,
-#                           scoring='neg_mean_squared_error',
-#                           return_train_score=True)
-#grid_search.fit(white_data, white_data_labels)
+grid_search = GridSearchCV(forest_reg, param_grid, cv=5,
+                          scoring='neg_mean_squared_error',
+                           return_train_score=True)
+grid_search.fit(white_data, white_data_labels)
 
 # Print the results
-#print("""
-#GridSearch Results: """, grid_search.best_estimator_)
+print("""
+GridSearch Results: """, grid_search.best_estimator_)
 
-#cvres = grid_search.cv_results_
-#for mean_score, params in zip(cvres["mean_test_score"], cvres["params"]):
-#    print(np.sqrt(-mean_score), params)
+cvres = grid_search.cv_results_
+for mean_score, params in zip(cvres["mean_test_score"], cvres["params"]):
+    print(np.sqrt(-mean_score), params)
 
 ########## FINAL MODEL ##########
-#final_model = grid_search.best_estimator_
+final_model = grid_search.best_estimator_
 
 ########## Evaluate the final model on the test set ##########
-#X_test = strat_test_set.drop("quality", axis=1)
-#y_test = strat_test_set["quality"].copy()
+X_test = strat_test_set.drop("quality", axis=1)
+y_test = strat_test_set["quality"].copy()
 
-#final_predictions = final_model.predict(X_test)
+final_predictions = final_model.predict(X_test)
 
-#final_mse = mean_squared_error(y_test, final_predictions)
-#final_rmse = np.sqrt(final_mse)
+final_mse = mean_squared_error(y_test, final_predictions)
+final_rmse = np.sqrt(final_mse)
 
-#print("""
-#Final MSE: """, final_mse)
-#print("Final RMSE: ", final_rmse)
+print("""
+Final MSE: """, final_mse)
+print("Final RMSE: ", final_rmse)
 
 # Calculate the range of a result that has 95% confidence
 #confidence = 0.95
@@ -240,8 +238,8 @@ print(white_data["alcohol_cat"].value_counts() / len(white_data))
 #                        scale=stats.sem(squared_errors))))
 
 ########## Use the final model to predict the quality ##########
-#X_new = [[12.2, None, 0.2, 2.1, 0.081, 14.0, 58.0, 0.999, 3.2, 0.55, 12]] # A new set of data that is going to be used to predict the quality
-#X_imputed = imputer.transform(X_new) # Transform the imputed value (median) into the new data with NULL(None) value
-#print("X_imputed: ", X_imputed) # A check to make sure the imputed value was added to the new data
-#X_new_prediction = final_model.predict(X_imputed) # Perform the prediction
-#print("Prediction Quality = ", X_new_prediction ) # Print the prediction
+X_new = [[12.2, None, 0.2, 2.1, 0.081, 14.0, 58.0, 0.999, 3.2, 0.55, 12]] # A new set of data that is going to be used to predict the quality
+X_imputed = imputer.transform(X_new) # Transform the imputed value (median) into the new data with NULL(None) value
+print("X_imputed: ", X_imputed) # A check to make sure the imputed value was added to the new data
+X_new_prediction = final_model.predict(X_imputed) # Perform the prediction
+print("Prediction Quality = ", X_new_prediction ) # Print the prediction

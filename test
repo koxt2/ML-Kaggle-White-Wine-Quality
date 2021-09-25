@@ -1,0 +1,43 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.impute import SimpleImputer
+
+# Load CSV data
+def load_white_data():
+    return pd.read_csv('/Users/richard/Documents/Python/Machine-Learning/White-Wine-Quality/white.csv')
+white_data = load_white_data()
+
+# To stratify the test set data create an alcohol category atrribute 
+white_data["alcohol_cat"] = pd.cut(white_data["alcohol"],
+                               bins=[8, 9, 10, 11, 12, 13, np.inf],
+                               labels=[8, 9, 10, 11, 12, 13])
+print(white_data["alcohol_cat"].value_counts()) # Print the count in each category
+
+df = pd.DataFrame(white_data)
+check_for_nan = df[df['alcohol_cat'].isna()]
+#check_for_nan = df.isnull()
+#check_for_nan = df.isnull().any()
+print (check_for_nan)
+
+#df.iloc[2625, df.columns.get_loc('alcohol_cat')] = 8
+#df.iloc[3265, df.columns.get_loc('alcohol_cat')] = 8
+#df = df.drop(labels=2625, inplace=True)
+
+#pd.set_option('max_columns', None)
+#df = pd.DataFrame(white_data)
+#check_for_nan = df[df['alcohol_cat'].isna()]
+#check_for_nan = df.isnull()
+#check_for_nan = df.isnull().any()
+#print (check_for_nan)
+
+# Split from the dataset a stratified sample to use as a test set (20%)
+split = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+for train_index, test_index in split.split(white_data, white_data["alcohol_cat"]):
+    strat_train_set = white_data.loc[train_index]
+    strat_test_set = white_data.loc[test_index]
+
+# Check the proportions by alcohol of the test set match the complete dataset
+print(strat_test_set["alcohol_cat"].value_counts() / len(strat_test_set))
+print(white_data["alcohol_cat"].value_counts() / len(white_data))
+
